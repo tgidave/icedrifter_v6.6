@@ -25,10 +25,8 @@
  */
 
 #include <LowPower.h>
-//#include <TimeLib.h>
 #include <time.h>
 
-//#include <arduino.h>
 #include <avr/wdt.h>
 
 #include <TinyGPS++.h> // NMEA parsing: http://arduiniana.org
@@ -38,9 +36,12 @@
 #include "gps.h"
 #include "bmp280.h"
 #include "ds18b20.h"
-//#include "chain.h"
+
+#ifdef PROCESS_CHAIN_DATA
+  #include "chain.h"
+#endif //PROCESS_CHAIN_DATA
+
 #include "rockblock.h"
-//#include "serialmux.h"
 
 #define CONSOLE_BAUD 115200
 
@@ -202,10 +203,10 @@ void accumulateandsendData(void) {
 // Turn off the power to the BMP280, DS18B20, and GPS.
   digitalWrite(BMP280_DS18B20_GPS_POWER_PIN, LOW);
 
-//#ifdef PROCESS_CHAIN_DATA
-//  processChainData(&idData);
-//  totalDataLength += (idData.idTempByteCount + idData.idLightByteCount);
-//#endif  // PROCESS_CHAIN_DATA
+#ifdef PROCESS_CHAIN_DATA
+  processChainData(&idData);
+  totalDataLength += (idData.idTempByteCount + idData.idLightByteCount);
+#endif  // PROCESS_CHAIN_DATA
 
   wkPtr = (uint8_t*)&idData;
 
