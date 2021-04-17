@@ -58,6 +58,23 @@ void processChainData(icedrifterData* idPtr) {
   buffPtr = (uint8_t *)&idPtr->idChainData;
   idPtr->idcdError = 0;
 
+  // check to see of there is an extranious byte in the buffer.
+  if (schain.available()) {
+    schain.read();
+  }
+
+//#ifdef SERIAL_DEBUG
+//  DEBUG_SERIAL.print(F("Sending +1::debug=0\\n\n"));
+//#endif
+//
+//  schain.print(F("+1::debug=0\n"));
+// Need to add read of the message "\nDEBUG OFF\n" here.
+//  delay(1000);
+  
+#ifdef SERIAL_DEBUG
+  DEBUG_SERIAL.print(F("Sending +1::chain\\n\n"));
+#endif
+
   schain.print(F("+1::chain\n"));
   startTime = millis();
   idPtr->idTempByteCount = 0;
@@ -109,6 +126,10 @@ void processChainData(icedrifterData* idPtr) {
     delay(1000);
     return;
   }
+
+#ifdef SERIAL_DEBUG
+  DEBUG_SERIAL.print(F("Sending +1::light\\n\n"));
+#endif
 
   schain.print(F("+1::light\n"));
   startTime = millis();

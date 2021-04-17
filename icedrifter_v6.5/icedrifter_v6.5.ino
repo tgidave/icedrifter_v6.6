@@ -260,10 +260,10 @@ void setup() {
 //  digitalWrite(DS18B20_POWER_PIN, LOW);
 //#endif // PROCESS_REMOTR_TEMP
 
-//#ifdef PROCESS_CHAIN_DATA
-//  pinMode(CHAIN_POWER_PIN, OUTPUT);
-//  digitalWrite(CHAIN_POWER_PIN, LOW);
-//#endif // PROCESS_CHAIN_DATA
+#ifdef PROCESS_CHAIN_DATA
+  pinMode(CHAIN_POWER_PIN, OUTPUT);
+  digitalWrite(CHAIN_POWER_PIN, LOW);
+#endif // PROCESS_CHAIN_DATA
 
 #ifdef SERIAL_DEBUG
   //! Start the serial ports
@@ -392,4 +392,3 @@ void loop() {
   DEBUG_SERIAL.flush();
 #endif // SERIAL_DEBUG
 }
-

@@ -10,8 +10,8 @@
 #define LIGHT_DATA_SIZE (LIGHT_DATA_COUNT * LIGHT_DATA_FIELDS * sizeof(uint16_t))
 
 #define CHAIN_POWER 1
-#define CHAIN_RX 2
-#define CHAIN_TX 3
+#define CHAIN_RX 3
+#define CHAIN_TX 2
 
 struct rawLightData {
   uint16_t rldClear;
@@ -183,5 +183,3 @@ void loop() {
     delay(1000);
   }
 }
-
-

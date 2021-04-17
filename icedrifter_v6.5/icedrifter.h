@@ -54,7 +54,7 @@
 
 //To turn off the debugging messages, comment out the next line.
 
-#define SERIAL_DEBUG
+//#define SERIAL_DEBUG
 
 //The following defines are used to control what data is transmitted during debugging.
 //If "SERIAL_DEBUG" is not defined they have no effect.
@@ -98,17 +98,17 @@
 // The next define controls whether or not data from the temperature and light
 // sensors are collected and reported.  If the temperature and light
 // chain sensor is not present, comment out the next line.
-#define PROCESS_CHAIN_DATA
+//#define PROCESS_CHAIN_DATA
 
 #define DROP_CHAIN_RX_TX
 
 // These defines are used to determine how many sensors are on the temperature and
 // light chain.  They are only used if PROCESS_CHAIN_DATA is defined so you do not
 // need to change them if no chain hardware is attached.
-//#define TEMP_SENSOR_COUNT   160
-//#define LIGHT_SENSOR_COUNT  64
-#define TEMP_SENSOR_COUNT   16
-#define LIGHT_SENSOR_COUNT  6
+#define TEMP_SENSOR_COUNT   160
+#define LIGHT_SENSOR_COUNT  64
+//#define TEMP_SENSOR_COUNT   16
+//#define LIGHT_SENSOR_COUNT  6
 
 // Minutes to wait for data during chain reads.
 #define TEMP_CHAIN_TIMEOUT_MINUTES 3UL
