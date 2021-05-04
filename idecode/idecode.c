@@ -184,7 +184,7 @@ int getDataByChunk(char** fnl, int cnt) {
       if ((*wkPtr == '/') || (*wkPtr == '\\')) {
         fnPtr = wkPtr + 1;
       } else {
-        if (*wkPtr == '-') {
+        if ((*wkPtr == '-') || (*wkPtr == '_')) {
           dashFound = true;
           *wkPtr = 0;
           if (fileName[0] == 0) {
