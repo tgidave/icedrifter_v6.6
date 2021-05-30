@@ -33,7 +33,10 @@ icedrifterData idData; // structure that defines the icedrifter record.
 #define SECONDS_IN_30_YEARS (time_t)946684800                                     
 
 bool mailResultsSwitch; // switch to indicate an email should be sent.
-char emailAddress[256]; // email address to send the email to.
+
+#define maxEmailAddresses 5  // The maximum number of email addresses that can be specified.
+
+char emailAddress[maxEmailAddresses][256]; // email address to send the email to.
 
 int getDataByChunk(char**, int);
 void saveData(char* fileName);
@@ -53,7 +56,10 @@ void printHelp(void);
 //*****************************************************************************
 
 int main(int argc, char** argv) {
+
+  int i;
   int argIx;
+  int argCompare;
   struct stat fileStat;
 
 // we are expecting at least one argument.
@@ -64,47 +70,106 @@ int main(int argc, char** argv) {
   }
 
   argIx = 1;
+
+  for (i = 0; i < maxEmailAddresses; ++i ) {
+    emailAddress[i][0] = 0;
+  }
+
   mailResultsSwitch = false;
 
 // check the arguments and invoke the proper routines.
   if (argv[argIx][0] == '-') {
+
     while (1) {
+
       switch (argv[argIx][1]) {
+
         case 'm':
+
           mailResultsSwitch = true;
+          argCompare = argIx;
+          i = 0;
           ++argIx;
-          strcpy(emailAddress, argv[argIx]);
-          ++argIx;
+
+          if (argv[argIx][0] == '-') {
+            printf("Error: Mail results switch set but no email addresses specified!!!\n\n");
+            printHelp();
+            exit(1);
+          }
+
+          while (argv[argIx][0] != '-') {
+
+            if ((argIx - argCompare) < maxEmailAddresses) {
+              strcpy(emailAddress[i], argv[argIx]);
+              ++i;
+              ++argIx;
+
+              if (argIx >= argc) {
+                printf("Error: No arguments found after email addresses!\n\n");
+                printHelp();
+                exit(1);
+              }
+            } else {
+
+              printf("Error: Too many email addresses specified - only five allowed!!!\n\n");
+              printHelp();
+              exit(1);
+            }
+          }
+
           break;
+
         case 'c':
+
           if (stat(argv[argIx + 1], &fileStat) < 0) {
-            printf("No files found.\n");
+            printf("Error: No files found.\n");
             return (0);
           }
+
           if (getDataByChunk(&argv[argIx + 1], argc - argIx - 1) != 0) {
             exit(1);
           }
+
           printf("Decode sucessful.\n");
           return (0);
+
         case 'f':
-          if (stat(argv[argIx + 1], &fileStat) < 0) {
-            printf("No file found.\n");
+
+          if (mailResultsSwitch == true) {
+            printf("Error: Mail results (-m) may not be specified with -f!\n\n");
+            printHelp();
             exit(1);
           }
+
+          if (stat(argv[argIx + 1], &fileStat) < 0) {
+            printf("Error: No file found.\n");
+            exit(1);
+          }
+
           if (getDataByFile(&argv[argIx + 1]) != 0) {
             exit(1);
           }
+
           return (0);
+
         case 'h':
+
           printHelp();
           exit(0);
+
         default:
-          printf("Invalid switch!!!\n\n");
+
+          printf("Error: Invalid switch!!!\n\n");
           printHelp();
           exit(1);
       }
     }
   } else {
+    if (mailResultsSwitch == true) {
+      printf("Error: Mail results (-m) may not be specified without -c!\n\n");
+      exit(1);
+    }
+
     if (getDataByChar(&argv[1], argc - 1) != 0) {
       exit(1);
     }
@@ -174,6 +239,7 @@ int getDataByChunk(char** fnl, int cnt) {
   // all IDs match.
   for (i = 0; i < cnt; ++i) {
 
+    printf("Processing file name %s\n", argIx[i]);
     strcpy(tempHold, argIx[i]);
     wkPtr = tempHold;
     fnPtr = tempHold;
@@ -258,6 +324,7 @@ int getDataByChunk(char** fnl, int cnt) {
     } else {
       if (idcPtr->idcSendTime != recordTime) {
         printf("Error: Sent time of record %d does not equal sent time of first record!\n", i + 1);
+        printf("  recordTime = %x idcPtr->idcSendTime = %x.\n", recordTime, idcPtr->idcSendTime);
         printf("idecode terminating.\n");
         fclose(fd);
         exit(1);
@@ -323,8 +390,16 @@ int getDataByChunk(char** fnl, int cnt) {
 
   // If the user wants to send this data out by email, use mutt to do it.
   if (mailResultsSwitch == true) {
-    sprintf(tempHold, "mutt -s \"Decoded data for %s\" -a %s %s -- %s < %s",
-            fileName, datName, txtName, emailAddress, txtName);
+    sprintf(tempHold, "mutt -s \"Decoded data for %s\" -a %s %s -- %s %s %s %s %s < %s",
+            fileName, 
+            datName, 
+            txtName, 
+            emailAddress[0], 
+            emailAddress[1],
+            emailAddress[2],
+            emailAddress[3],
+            emailAddress[4], 
+            txtName);
 
     if (system(tempHold) != 0) {
       printf("Error returned from mutt command!!!\n");
@@ -734,7 +809,7 @@ float convertTempToC(short temp) {
 
 void printHelp(void) {
   printf("Help for idecode.\n\n");
-  printf("idecode [-m <email address>] -c <file name list or *.bin>\n");
+  printf("idecode [-m <one to five email addresses>] -c <file name list>\n");
   printf("idecode -f <path and file name of a .dat file>\n");
   printf("idecode <character data from email(s) as a single string>\n\n");
   printf("-c Read one to three .bin chunk files, decode the data, display\n");
@@ -748,8 +823,10 @@ void printHelp(void) {
   printf("   icedrifterData structured file and print it's data in a human\n");
   printf("   readable format to the console.\n\n");
   printf("-m Only used with -c.  Must be specified before the -c option.\n");
-  printf("   Indicates that an email should be created and sent to <email address>\n");
-  printf("   which contains the console output and attached .dat and .txt files.\n\n");
+  printf("   Indicates that an email should be created and sent to at least one\n");
+  printf("   but not more than five email addresses which follow the -m separated\n");
+  printf("   by at least one space.  The email contains the console output in the body\n");
+  printf("   of the message and has the .dat and .txt files as attachments.\n\n");
   printf("For the -c option, if more than one file is specified, these files\n");
   printf("should be a set of chunks from a single icedrifter report.  The\n");
   printf("Rockblock id number and sent times should all match.\n");
