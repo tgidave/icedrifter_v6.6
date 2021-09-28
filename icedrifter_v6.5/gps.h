@@ -10,12 +10,7 @@
 #define GPS_SERIAL Serial1
 #define GPS_BAUD 9600
 
-typedef enum ft {
-  FIX_FULL,
-  FIX_TIME
-} fixType;
-
-int gpsGetFix(fixType typeFix, icedrifterData* idData);
+int gpsGetFix(icedrifterData* idData);
 
 int gpsGetMinutes();
 

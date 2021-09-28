@@ -186,7 +186,7 @@ void accumulateandsendData(void) {
   digitalWrite(BMP280_DS18B20_GPS_POWER_PIN, HIGH);
   delay(1000);
 
-  if ((fixFound = gpsGetFix(FIX_FULL, &idData)) == false) {
+  if ((fixFound = gpsGetFix(&idData)) == false) {
     idData.idGPSTime = 0;
     idData.idLatitude = 0;
     idData.idLongitude = 0;
@@ -279,7 +279,7 @@ void setup() {
   DEBUG_SERIAL.flush(); // Make sure the above message is displayed before continuing.
 #endif // SERIAL_DEBUG
 
-  gotFullFix = false; //! Clear the GPS full fix switch so the first call to the loop function requests a full fix.
+//  gotFullFix = false; //! Clear the GPS full fix switch so the first call to the loop function requests a full fix.
   firstTime = true;
 
 #ifdef SERIAL_DEBUG
@@ -308,13 +308,8 @@ void loop() {
   digitalWrite(BMP280_DS18B20_GPS_POWER_PIN, HIGH);
   delay(1000);
 
-  //! Check to see if a full fix was received.  If not, try to get a full fix.
-  //! If so, just get a time fix.
-  if (gotFullFix) {
-    fixFound = gpsGetFix(FIX_TIME, &idData);
-  } else {
-    fixFound = gpsGetFix(FIX_FULL, &idData);
-  }
+  //! Try to get the GPS fix data.
+    fixFound = gpsGetFix(&idData);
 
   //! If a GPS fix was received, set the gotFullFix switch and clear the noFixFound count.
   //! Otherwise add one to the noFixFoundCount.
@@ -350,7 +345,7 @@ void loop() {
   delay(1000);
 
   // Accumulating and sending the data can take a while so update the time again.
-  fixFound = gpsGetFix(FIX_FULL, &idData);
+  fixFound = gpsGetFix(&idData);
   firstTime = false;
 
   digitalWrite(BMP280_DS18B20_GPS_POWER_PIN, LOW);
