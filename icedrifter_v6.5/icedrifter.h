@@ -1,28 +1,8 @@
 
-/*!                                                                              
- *  @file icedrifter.ino                                                  
+/*                                                                              
+ *  icedrifter.h                                                  
  *                                                                               
- *  @mainpage Code to implement the Icedrifter buoy.                     
- *                                                                               
- *  @section intro_sec Introduction                                              
- *  
- *  This code implements functionality that gathers GPS location data,
- *  temperature and air pressure data, and optionally, a remote
- *  temperature probe and light and temperature chain data.  This data
- *  is then sent back to the user using the Iridium system on a daily
- *  or hourly basis.
- *                                                                               
- *  @section author Author                                                       
- *                                                                               
- *  Uncle Dave                                                  
- *                                                                               
- *  @section license License                                                     
- *                                                                               
- *  Unknown (Talk to Cy)                                                        
- *                                                                               
- *  @section HISTORY                                                             
- *                                                                               
- *  v1.0 - First release                                                         
+ *  Header file for implementing the Icedrifter buoy.                     
  */                                                                              
 
 #ifndef _ICEDRIFTER_H
@@ -30,7 +10,7 @@
 #include <time.h>
 
 #define HARDWARE_VERSION "6.5"
-#define SOFTWARE_VERSION "1.0"
+#define SOFTWARE_VERSION "1.0.1"
 
 // ****************************************************************************
 // ***                                                                      ***

@@ -30,14 +30,6 @@ void ISBDDiagsCallback(IridiumSBD *device, char c) {
 
 void rbTransmitIcedrifterData(icedrifterData *idPtr, int idLen) {
 
-#ifdef NEVER_TRANSMIT
-
-#ifdef SERIAL_DEBUG_ROCKBLOCK
-  DEBUG_SERIAL.print(F("Transmission disabled by NEVER_TRANSMIT switch.\n"));
-#endif
-
-#else // NEVER_TRANSMIT
-
   int rc;
   int recCount;
   int dataLen;
@@ -46,10 +38,61 @@ void rbTransmitIcedrifterData(icedrifterData *idPtr, int idLen) {
   uint8_t *dataPtr;
   uint8_t *chunkPtr;
   uint8_t *wkPtr;
-  struct tm* timeInfo;
+  struct tm *timeInfo;
   char *buffPtr;
   char buff[128];
   char oBuff[340];
+
+  if (dataLen == 0) {
+    oBuff[0] = 0;
+    strcat(oBuff, "\nGMT=");
+    timeInfo = gmtime(&idPtr->idGPSTime);
+    buffPtr = asctime(timeInfo);
+    strcat(oBuff, buffPtr);
+
+#ifdef SERIAL_DEBUG_ROCKBLOCK
+    DEBUG_SERIAL.print("\nGMT debug=");
+    DEBUG_SERIAL.print(buffPtr);
+    DEBUG_SERIAL.print("\n");
+#endif // SERIAL_DEBUG_ROCKBLOCK
+
+    strcat(oBuff, "\nLBT=");
+    timeInfo = gmtime(&idPtr->idLastBootTime);
+    buffPtr = asctime(timeInfo);
+    strcat(oBuff, buffPtr);
+    strcat(oBuff, "\nLat=");
+    buffPtr = dtostrf(idPtr->idLatitude, 4, 6, buff);
+    strcat(oBuff, buffPtr);
+    strcat(oBuff, "\nLon=");
+    buffPtr = dtostrf(idPtr->idLongitude, 4, 6, buff);
+    strcat(oBuff, buffPtr);
+//    strcat(oBuff, "\nTmp=");
+//    buffPtr = dtostrf(idPtr->idTemperature, 4, 2, buff);
+//    strcat(oBuff, buffPtr);
+    strcat(oBuff, "\nBP=");
+    buffPtr = dtostrf(idPtr->idPressure, 6, 2, buff);
+    strcat(oBuff, buffPtr);
+    strcat(oBuff, " Pa\nTs=");
+    buffPtr = dtostrf(idPtr->idRemoteTemp, 4, 2, buff);
+    strcat(oBuff, buffPtr);
+    strcat(oBuff, " C = ");
+    buffPtr = dtostrf(((idPtr->idRemoteTemp * 1.8) + 32), 4, 2, buff);
+    strcat(oBuff, buffPtr);
+    strcat(oBuff, " F\n");
+
+#ifdef SERIAL_DEBUG_ROCKBLOCK
+    DEBUG_SERIAL.print(oBuff);
+    delay(1000);
+#endif // SERIAL_DEBUG_ROCKBLOCK
+  }
+
+#ifdef NEVER_TRANSMIT
+
+#ifdef SERIAL_DEBUG_ROCKBLOCK
+  DEBUG_SERIAL.print(F("Transmission disabled by NEVER_TRANSMIT switch.\n"));
+#endif
+
+#else // NEVER_TRANSMIT
 
   // Setup the RockBLOCK
   isbd.setPowerProfile(IridiumSBD::USB_POWER_PROFILE);
@@ -86,54 +129,12 @@ void rbTransmitIcedrifterData(icedrifterData *idPtr, int idLen) {
 
     recCount = 0;
     dataPtr = (uint8_t *)idPtr;
-    chunkPtr = (uint8_t *)&idcChunk.idcBuffer; 
+    chunkPtr = (uint8_t *)&idcChunk.idcBuffer;
     dataLen = idLen;
 
     if (dataLen == 0) {
-
-      oBuff[0] = 0;
-//      strcat(oBuff, "idGPSTime=0x");
-//      sprintf(buff, "%x", idPtr->idGPSTime);
-//      strcat(oBuff, buff);
-//      strcat(oBuff, "\nidLastBootTime=0x");
-//      sprintf(buff, "%x", idPtr->idLastBootTime);
-//      strcat(oBuff, buff);
-      strcat(oBuff, "\nGMT=");
-      timeInfo = gmtime(&idPtr->idGPSTime);
-      buffPtr = asctime(timeInfo);
-      strcat(oBuff, buffPtr);
-      strcat(oBuff, "\nLBT=");
-      timeInfo = gmtime(&idPtr->idLastBootTime);
-      buffPtr = asctime(timeInfo);
-      strcat(oBuff, buffPtr);
-      strcat(oBuff, "\nLat=");
-      buffPtr = dtostrf(idPtr->idLatitude, 4, 6, buff);
-      strcat(oBuff, buffPtr);
-      strcat(oBuff, "\nLon=");
-      buffPtr = dtostrf(idPtr->idLongitude, 4, 6, buff);
-      strcat(oBuff, buffPtr);
-//    strcat(oBuff, "\nTmp=");
-//    buffPtr = dtostrf(idPtr->idTemperature, 4, 2, buff);
-//    strcat(oBuff, buffPtr);
-      strcat(oBuff, "\nBP=");
-      buffPtr = dtostrf(idPtr->idPressure, 6, 2, buff);
-      strcat(oBuff, buffPtr);
-      strcat(oBuff, " Pa\nTs=");
-      buffPtr = dtostrf(idPtr->idRemoteTemp, 4, 2, buff);
-      strcat(oBuff, buffPtr);
-      strcat(oBuff, " C = ");
-      buffPtr = dtostrf(((idPtr->idRemoteTemp * 1.8) + 32), 4, 2, buff);
-      strcat(oBuff, buffPtr);
-      strcat(oBuff, " F\n");
-
-#ifdef SERIAL_DEBUG_ROCKBLOCK
-      DEBUG_SERIAL.print(oBuff);
-      delay(1000);
-//      DEBUG_SERIAL.flush();
-#endif // SERIAL_DEBUG_ROCKBLOCK
-
       dataLen = strlen(oBuff) + 1;
-      rc = isbd.sendSBDBinary((uint8_t *)oBuff, dataLen);
+      rc = isbd.sendSBDBinary((const uint8_t *)oBuff, dataLen);
 
     } else {
 

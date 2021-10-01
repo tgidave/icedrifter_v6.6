@@ -6,6 +6,8 @@
 #include "icedrifter.h"
 #include "gps.h"
 
+#define fixfndMaxCount 10
+
 TinyGPSPlus tinygps;
 
 char GPShexchars[] = "0123456789ABCDEF";
@@ -18,6 +20,7 @@ void GPSprintHexChar(uint8_t x) {
 int gpsGetFix(icedrifterData * idData) {
 
   int fixfnd = false;
+  int fixfndCount = 0;
   unsigned long now;
   tm timeStru;
   struct tm *ptm = &timeStru;
@@ -36,12 +39,35 @@ int gpsGetFix(icedrifterData * idData) {
 
   // Step 2: Look for GPS signal for up to 7 minutes
   for (now = millis(); !fixfnd && ((millis() - now) < (7UL * 60UL * 1000UL));) {
+    while (1) {
+      if (GPS_SERIAL.available()) {
+        tinygps.encode(GPS_SERIAL.read());
 
-    if (GPS_SERIAL.available()) {
-      tinygps.encode(GPS_SERIAL.read());
+        fixfnd = tinygps.location.isValid() && tinygps.location.isUpdated() &&
+          tinygps.date.isValid() && tinygps.date.isUpdated() &&
+          tinygps.time.isValid() && tinygps.time.isUpdated() &&
+          tinygps.altitude.isValid() && tinygps.altitude.isUpdated();
 
-      fixfnd = tinygps.location.isValid() && tinygps.date.isValid() &&
-          tinygps.time.isValid() && tinygps.altitude.isValid();
+        if (fixfnd) {
+          fixfndCount++;
+  #ifdef SERIAL_DEBUG_GPS
+          DEBUG_SERIAL.print(F("Got fixfnd and fixfndCount = "));
+          DEBUG_SERIAL.print(fixfndCount);
+          DEBUG_SERIAL.print(F("\n"));
+  #endif
+        } 
+  #ifdef SERIAL_DEBUG_GPS
+        else if (fixfndCount > 0) {
+          DEBUG_SERIAL.print(F("No fix found and fixfndCount = "));
+          DEBUG_SERIAL.print(fixfndCount);
+          DEBUG_SERIAL.print(F("\n"));
+        }
+  #endif
+      }
+          
+      if (fixfnd && fixfndCount >= fixfndMaxCount) {
+        break;
+      }
     }
 
     if (fixfnd) {
@@ -50,13 +76,14 @@ int gpsGetFix(icedrifterData * idData) {
   }
 
   if (fixfnd) {
+
     timeStru.tm_year = tinygps.date.year() - 1900;
     timeStru.tm_mon = tinygps.date.month() - 1;
     timeStru.tm_mday = tinygps.date.day();
     timeStru.tm_hour = tinygps.time.hour();
     timeStru.tm_min = tinygps.time.minute();
     timeStru.tm_sec = tinygps.time.second();
-    idData->idGPSTime = mktime(&timeStru);
+    idData->idGPSTime = mk_gmtime(&timeStru);
     idData->idLatitude = tinygps.location.lat();
     idData->idLongitude = tinygps.location.lng();
 
