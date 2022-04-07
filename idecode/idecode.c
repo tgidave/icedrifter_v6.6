@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
 
           while (argv[argIx][0] != '-') {
 
-            if ((argIx - argCompare) < maxEmailAddresses) {
+            if ((argIx - argCompare) <= maxEmailAddresses) {
               strcpy(emailAddress[i], argv[argIx]);
               ++i;
               ++argIx;

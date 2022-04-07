@@ -85,10 +85,10 @@
 // These defines are used to determine how many sensors are on the temperature and
 // light chain.  They are only used if PROCESS_CHAIN_DATA is defined so you do not
 // need to change them if no chain hardware is attached.
-#define TEMP_SENSOR_COUNT   160
-#define LIGHT_SENSOR_COUNT  64
-//#define TEMP_SENSOR_COUNT   16
-//#define LIGHT_SENSOR_COUNT  6
+//#define TEMP_SENSOR_COUNT   160
+//#define LIGHT_SENSOR_COUNT  64
+#define TEMP_SENSOR_COUNT   16
+#define LIGHT_SENSOR_COUNT  6
 
 // Minutes to wait for data during chain reads.
 #define TEMP_CHAIN_TIMEOUT_MINUTES 3UL

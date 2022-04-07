@@ -28,7 +28,7 @@
 #include <LowPower.h>
 #include <time.h>
 
-#include <avr/wdt.h>
+//#include <avr/wdt.h>
 
 #include <TinyGPS++.h> // NMEA parsing: http://arduiniana.org
 #include <PString.h> // String buffer formatting: http://arduiniana.org

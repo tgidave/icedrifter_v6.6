@@ -1,7 +1,9 @@
 #include <SoftwareSerial.h>
 
-#define TEMP_DATA_COUNT   160
-#define LIGHT_DATA_COUNT  64
+//#define TEMP_DATA_COUNT   160
+//#define LIGHT_DATA_COUNT  64
+#define TEMP_DATA_COUNT   16
+#define LIGHT_DATA_COUNT  6
 #define LIGHT_DATA_FIELDS 4
 
 #define RGB_DATA_FIELDS   3
