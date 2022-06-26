@@ -9,8 +9,8 @@
 #define _ICEDRIFTER_H
 #include <time.h>
 
-#define HARDWARE_VERSION "6.5"
-#define SOFTWARE_VERSION "1.0.1"
+#define HARDWARE_VERSION "6.6"
+#define SOFTWARE_VERSION "1.0.2"
 
 // ****************************************************************************
 // ***                                                                      ***
@@ -44,7 +44,7 @@
 #define DEBUG_BAUD 115200
 
 #define SERIAL_DEBUG_GPS
-#define SERIAL_DEBUG_BMP280
+#define SERIAL_DEBUG_MS5837
 #define SERIAL_DEBUG_DS18B20
 #define SERIAL_DEBUG_CHAIN
 #define SERIAL_DEBUG_ROCKBLOCK
@@ -165,7 +165,7 @@ typedef struct icedrifterData {
   chainData idChainData;
 #endif // PROCESS_CHAIN_DATA
 
-#define BMP280_DS18B20_GPS_POWER_PIN 14
+#define MS5837_DS18B20_GPS_POWER_PIN 14
 
 void printHexChar(uint8_t x);
 

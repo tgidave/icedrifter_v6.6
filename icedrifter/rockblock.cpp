@@ -50,7 +50,9 @@ void rbTransmitIcedrifterData(icedrifterData *idPtr, int idLen) {
     buffPtr = asctime(timeInfo);
     strcat(oBuff, buffPtr);
 
-#ifdef SERIAL_DEBUG_ROCKBLOCK
+//#define SERIAL_DEBUG_ROCKBLOCK_GMT
+
+#ifdef SERIAL_DEBUG_ROCKBLOCK_GMT
     DEBUG_SERIAL.print("\nGMT debug=");
     DEBUG_SERIAL.print(buffPtr);
     DEBUG_SERIAL.print("\n");
@@ -72,26 +74,29 @@ void rbTransmitIcedrifterData(icedrifterData *idPtr, int idLen) {
     strcat(oBuff, "\nBP=");
     buffPtr = dtostrf(idPtr->idPressure, 6, 2, buff);
     strcat(oBuff, buffPtr);
-    strcat(oBuff, " Pa\nTs=");
+    strcat(oBuff, " hPa\nTs=");
     buffPtr = dtostrf(idPtr->idRemoteTemp, 4, 2, buff);
     strcat(oBuff, buffPtr);
     strcat(oBuff, " C = ");
     buffPtr = dtostrf(((idPtr->idRemoteTemp * 1.8) + 32), 4, 2, buff);
     strcat(oBuff, buffPtr);
     strcat(oBuff, " F\n");
+    strcat(oBuff, "\nIcedrifter H/V ");
+    strcat(oBuff, HARDWARE_VERSION);
+    strcat(oBuff, " S/V ");
+    strcat(oBuff, SOFTWARE_VERSION);
 
 #ifdef SERIAL_DEBUG_ROCKBLOCK
+    strcat(oBuff, "\n*** Debug is ON ***\n");
     DEBUG_SERIAL.print(oBuff);
-    delay(1000);
+    delay(1000);  
 #endif // SERIAL_DEBUG_ROCKBLOCK
   }
 
 #ifdef NEVER_TRANSMIT
-
-#ifdef SERIAL_DEBUG_ROCKBLOCK
-  DEBUG_SERIAL.print(F("Transmission disabled by NEVER_TRANSMIT switch.\n"));
-#endif
-
+  #ifdef SERIAL_DEBUG_ROCKBLOCK
+    DEBUG_SERIAL.print(F("Transmission disabled by NEVER_TRANSMIT switch.\n"));
+  #endif
 #else // NEVER_TRANSMIT
 
   // Setup the RockBLOCK
@@ -134,6 +139,18 @@ void rbTransmitIcedrifterData(icedrifterData *idPtr, int idLen) {
 
     if (dataLen == 0) {
       dataLen = strlen(oBuff) + 1;
+#ifdef SERIAL_DEBUG_ROCKBLOCK
+        DEBUG_SERIAL.flush();
+        DEBUG_SERIAL.print(F("Chunk address="));
+        DEBUG_SERIAL.print((long)chunkPtr, HEX);
+        DEBUG_SERIAL.print(F(" Chunk length="));
+        DEBUG_SERIAL.print(chunkLen);
+        DEBUG_SERIAL.print(F("\n"));
+        wkPtr = (uint8_t *)&idcChunk;
+        DEBUG_SERIAL.print(*wkPtr);
+        DEBUG_SERIAL.print(F("\n"));
+        DEBUG_SERIAL.flush();
+#endif // SERIAL_DEBUG_ROCKBLOCK
       rc = isbd.sendSBDBinary((const uint8_t *)oBuff, dataLen);
 
     } else {
@@ -165,10 +182,14 @@ void rbTransmitIcedrifterData(icedrifterData *idPtr, int idLen) {
         DEBUG_SERIAL.print(F("\n"));
         wkPtr = (uint8_t *)&idcChunk;
 
+  #ifdef HUMAN_READABLE_DISPLAY
+        DEBUG_SERIAL.print(*wkPtr);
+  #else
         for (i = 0; i < chunkLen; i++) {
           rbprintHexChar((uint8_t)*wkPtr);
           ++wkPtr;
         }
+  #endif
 
         DEBUG_SERIAL.print(F("\n"));
         DEBUG_SERIAL.flush();

@@ -35,7 +35,7 @@
 
 #include "icedrifter.h"
 #include "gps.h"
-#include "bmp280.h"
+#include "ms5837_02ba.h"
 #include "ds18b20.h"
 
 #ifdef PROCESS_CHAIN_DATA
@@ -141,7 +141,7 @@ void accumulateandsendData(void) {
 
   idData.idLastBootTime = lbTime;
 
-  digitalWrite(BMP280_DS18B20_GPS_POWER_PIN, HIGH);
+  digitalWrite(MS5837_DS18B20_GPS_POWER_PIN, HIGH);
   delay(1000);
 
   if ((fixFound = gpsGetFix(&idData)) == false) {
@@ -159,7 +159,7 @@ void accumulateandsendData(void) {
   DEBUG_SERIAL.print("\n");
 #endif // SERIAL_DEBUG_ROCKBLOCK
 
-    getBMP280Data(&idData);
+  getMs5837Data(&idData);
 
 #ifdef PROCESS_REMOTE_TEMP
   getRemoteTemp(&idData);
@@ -167,8 +167,8 @@ void accumulateandsendData(void) {
   idData.idRemoteTemp = 0;
 #endif // PROCESS_REMOTE_TEMP
 
-// Turn off the power to the BMP280, DS18B20, and GPS.
-  digitalWrite(BMP280_DS18B20_GPS_POWER_PIN, LOW);
+// Turn off the power to the MS5837, DS18B20, and GPS.
+  digitalWrite(MS5837_DS18B20_GPS_POWER_PIN, LOW);
 
 #ifdef PROCESS_CHAIN_DATA
   processChainData(&idData);
@@ -204,8 +204,8 @@ void accumulateandsendData(void) {
 
 void setup() {
 
-  pinMode(BMP280_DS18B20_GPS_POWER_PIN, OUTPUT);
-  digitalWrite(BMP280_DS18B20_GPS_POWER_PIN, LOW);
+  pinMode(MS5837_DS18B20_GPS_POWER_PIN, OUTPUT);
+  digitalWrite(MS5837_DS18B20_GPS_POWER_PIN, LOW);
 
   pinMode(ROCKBLOCK_POWER_PIN, OUTPUT);
   digitalWrite(ROCKBLOCK_POWER_PIN, LOW);
@@ -255,7 +255,7 @@ void loop() {
 
   noFixFoundCount = 0;  // clear the no fix found count.
 
-  digitalWrite(BMP280_DS18B20_GPS_POWER_PIN, HIGH);
+  digitalWrite(MS5837_DS18B20_GPS_POWER_PIN, HIGH);
   delay(1000);
 
   // Try to get the GPS fix data.
@@ -293,14 +293,14 @@ void loop() {
   }
 #endif // TEST_ALL
 
-  digitalWrite(BMP280_DS18B20_GPS_POWER_PIN, HIGH);
+  digitalWrite(MS5837_DS18B20_GPS_POWER_PIN, HIGH);
   delay(1000);
 
   // Accumulating and sending the data can take a while so update the time again.
   fixFound = gpsGetFix(&idData);
   firstTime = false;
 
-  digitalWrite(BMP280_DS18B20_GPS_POWER_PIN, LOW);
+  digitalWrite(MS5837_DS18B20_GPS_POWER_PIN, LOW);
   
   // If a GPS fix was found
   if (fixFound) {

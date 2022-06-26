@@ -23,18 +23,28 @@ float getRemoteTemp(icedrifterData* idData) {
 
   sensors.requestTemperatures(); // Send the command to get temperature readings
   delay(1000);
-  idData->idRemoteTemp = sensors.getTempCByIndex(0);
+
+
+  if ((idData->idRemoteTemp = sensors.getTempCByIndex(0)) == -127) {
 
 #ifdef SERIAL_DEBUG_DS18B20
-  DEBUG_SERIAL.print(F("Remote temperature is "));
+    DEBUG_SERIAL.print(F("Remote temperature is "));
+    DEBUG_SERIAL.print(idData->idRemoteTemp);
+    DEBUG_SERIAL.print(F(" C\n"));
+
+    if (idData->idRemoteTemp == -127) {
+      DEBUG_SERIAL.print(F("Error: Disconnected!!!\n"));
+    }
+#endif
+
+    idData->idRemoteTemp = idData->idTemperature;
+  }
+
+#ifdef SERIAL_DEBUG_DS18B20
+  DEBUG_SERIAL.print(F("Sending back "));
   DEBUG_SERIAL.print(idData->idRemoteTemp);
   DEBUG_SERIAL.print(F(" C\n"));
-
-  if (idData->idRemoteTemp == -127) {
-    DEBUG_SERIAL.print(F("Error: Disconnected!!!\n"));
-  } else {
-    DEBUG_SERIAL.print(F("Done!\n"));
-  }
 #endif
-//  digitalWrite(DS18B20_POWER_PIN, LOW);
+
+  return (idData->idRemoteTemp);
 }

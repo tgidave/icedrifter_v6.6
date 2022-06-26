@@ -6,7 +6,8 @@
 #include "icedrifter.h"
 #include "gps.h"
 
-#define fixfndMaxCount 10
+#define GET_FIX_COUNT_MAX  2
+#define FIX_FND_COUNT_MAX  10
 
 TinyGPSPlus tinygps;
 
@@ -17,11 +18,13 @@ void GPSprintHexChar(uint8_t x) {
   Serial.print(GPShexchars[(x & 0x0f)]);
 }
 
-int gpsGetFix(icedrifterData * idData) {
+int gpsGetFix(icedrifterData *idData) {
 
+  unsigned long tempTimeout;
+  unsigned long now;
+  int gpsFixCount;
   int fixfnd = false;
   int fixfndCount = 0;
-  unsigned long now;
   tm timeStru;
   struct tm *ptm = &timeStru;
 
@@ -38,39 +41,42 @@ int gpsGetFix(icedrifterData * idData) {
   tinygps = TinyGPSPlus();
 
   // Step 2: Look for GPS signal for up to 7 minutes
-  for (now = millis(); !fixfnd && ((millis() - now) < (7UL * 60UL * 1000UL));) {
-    while (1) {
+  gpsFixCount = 0;
+
+  while (1) {
+    for (now = millis(); !fixfnd && ((tempTimeout = (millis() - now)) < (7UL * 60UL * 1000UL));) {
       if (GPS_SERIAL.available()) {
         tinygps.encode(GPS_SERIAL.read());
 
         fixfnd = tinygps.location.isValid() && tinygps.location.isUpdated() &&
-          tinygps.date.isValid() && tinygps.date.isUpdated() &&
-          tinygps.time.isValid() && tinygps.time.isUpdated() &&
-          tinygps.altitude.isValid() && tinygps.altitude.isUpdated();
+            tinygps.date.isValid() && tinygps.date.isUpdated() &&
+            tinygps.time.isValid() && tinygps.time.isUpdated() &&
+            tinygps.altitude.isValid() && tinygps.altitude.isUpdated();
 
         if (fixfnd) {
           fixfndCount++;
-  #ifdef SERIAL_DEBUG_GPS
+#ifdef SERIAL_DEBUG_GPS
           DEBUG_SERIAL.print(F("Got fixfnd and fixfndCount = "));
           DEBUG_SERIAL.print(fixfndCount);
           DEBUG_SERIAL.print(F("\n"));
-  #endif
-        } 
-  #ifdef SERIAL_DEBUG_GPS
+#endif
+        }
+
+#ifdef SERIAL_DEBUG_GPS
         else if (fixfndCount > 0) {
           DEBUG_SERIAL.print(F("No fix found and fixfndCount = "));
           DEBUG_SERIAL.print(fixfndCount);
           DEBUG_SERIAL.print(F("\n"));
         }
-  #endif
+#endif
       }
-          
-      if (fixfnd && fixfndCount >= fixfndMaxCount) {
+
+      if (fixfnd) {
         break;
       }
     }
 
-    if (fixfnd) {
+    if (++gpsFixCount >= GET_FIX_COUNT_MAX) {
       break;
     }
   }
@@ -97,7 +103,7 @@ int gpsGetFix(icedrifterData * idData) {
     str.print(tinygps.date.month());
     str.print(F("/"));
     str.print(tinygps.date.day());
-    str.print(F(" "));//
+    str.print(F(" ")); //
     str.print(tinygps.time.hour());
     str.print(F(":"));
     str.print(tinygps.time.minute());
@@ -127,10 +133,10 @@ else {
 }
 
 int gpsGetMinutes() {
-  return(tinygps.time.minute());
+  return (tinygps.time.minute());
 }
 
 int gpsGetHour() {
-  return(tinygps.time.hour());
+  return (tinygps.time.hour());
 }
 
